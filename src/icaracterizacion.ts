@@ -1,0 +1,20 @@
+export interface ICaracterizacion {
+    empresa: string,
+    nit: string,
+    yearDeConstitucion: number,
+    telefono: string,
+    correo: string,
+    institucionQueExpidePersoneriaJuridica: string,
+    laOrganizacionTieneRedesOMedios: [],
+    queRedesOMediosManejaLaOrganizacion: [],
+    territorioDeCobertura: [],
+    queOdsDesarrollaLaOrganizacion: [],
+    poblacionObjetivoDeLaOrganizacion: [],
+    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: number,
+    fuentesDeFinanciacionDeLaOrganizacion: [],
+    numeroTotalDeEmpleadosConContratoLaboral: number,
+    numeroTotalDeVoluntariosEnLaOrganizacion: number,
+    numeroTotalDePracticantesEnLaOrganizacion: number,
+    territorioDeActividad: string,
+    porcentajeDeFinanciacionPorRecursosPropios: number
+}
