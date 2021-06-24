@@ -5,15 +5,19 @@ import { INit } from './init';
 import { EmpresaSchema } from './empresaSchema';
 import { NitSchema } from './nit-schema';
 import { CaracterizacionSchema } from './caracterizacion-schema';
+import  fs from 'fs';
+
 
 const workSheetsFromFile = async (path: string) => {
     const workSheet = xlsx.parse(path);
     var emptyList: any = [];
     var listaDeNitsNoEncontrados: any = [];
+    var datosDeLosNoEncontrados: any = [];
     var counter: number = 11;
     var contadorNoEncontrados: number = 0;
     var contadorEncontrados: number = 0;
     var contadorCooperativasYPre: number = 0;
+    var contadorFiltrados: number = 0;
     var counterObjeto: number = -1;
     var datosEmpresas: any = [];
 
@@ -21,16 +25,37 @@ const workSheetsFromFile = async (path: string) => {
         counter++;
         counterObjeto++;
         //console.log('counter ', counter); 
-        if (counter >= 22) {
-            var objeto: any = { yearDeConstitucion: element[3], nit: element[2], telefono: element[11], correo: element[12], razonSocial: element[1] };
+        if (counter >= 22 && counter <= 154) {
+        //if (counter == 24) {
+            var objeto: any = {
+                yearDeConstitucion: element[3] == undefined ? '' : element[3],
+                nit: element[2] == undefined ? '' : element[2],
+                telefono: element[11] == undefined ? '' : element[11],
+                correoElectronico: element[12] == undefined ? '' : element[12],
+                razonSocial: element[1] == undefined ? '' : element[1],
+                numero: element[0] == undefined ? 0 : element[0]
+            };
             //console.log('objeto ', objeto);   
-            const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correo);
+            if (objeto.razonSocial.indexOf('FONDOS') != -1
+                || objeto.razonSocial.indexOf('COOPERATIVAS') != -1
+                || objeto.razonSocial.indexOf('LIQUIDACION') != -1
+                || objeto.razonSocial.indexOf('PRECOOPERATIVAS') != -1) {
+                contadorFiltrados++;
+                continue;
+            }
+            const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correoElectronico);
             //var objeto: any = { yearDeConstitucion: '10', nit: '10', telefono: '0', correo: '0' };
             //const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correo);
             //console.log('datosEmpresas ', datosEmpresas);
             if (datosEmpresas == '') {
-                if (objeto['nit'] !== undefined) listaDeNitsNoEncontrados.push({ nit: objeto['nit'] });
-                //console.log('listaDeNitsNoEncontrados ', listaDeNitsNoEncontrados);
+                datosDeLosNoEncontrados.push({
+                    nit: objeto['nit'],
+                    correoElectronico: objeto['correoElectronico'],
+                    telefono: objeto['telefono'],
+                    razonSocial: objeto['razonSocial'],
+                    claGenEsadl: objeto['claGenEsadl'],
+                    numero: objeto['numero']
+                });
                 contadorNoEncontrados++;
             } else {
                 contadorEncontrados++;
@@ -40,47 +65,82 @@ const workSheetsFromFile = async (path: string) => {
             //console.log('element.length ', element.length); 
 
             if (datosEmpresas.length > 0) {
-                if (estaEnLiquidacionOEsPre(objeto.razonSocial) == false) {
-                    var idDeMongo = datosEmpresas[0]._id;
-                    objeto['idEmpresa'] = idDeMongo;
-                    emptyList.push({
-                        empresa: objeto['idEmpresa'],
-                        yearDeConstitucion: objeto['yearDeConstitucion'],
-                        nit: objeto['nit'],
-                        telefono: objeto['telefono'],
-                        correo: objeto['correo'],
-                        InstitucionQueExpidePersoneriaJuridica: element[7],
-                        totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
-                        TerritorioDeActividad: element[58],
-                        NumeroTotalDeEmpleadosConContratoLaboral: element[55],
-                        NumeroTotalDeVoluntariosEnLaOrganizacion: element[56],
-                        NumeroTotalDePracticantesEnLaOrganizacion: element[57],
-                        PorcentajeDeFinanciacionPorRecursosPropios: element[60],
-                        laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
-                        queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
-                        territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
-                        queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
-                            element[30], element[31], element[32], element[33],
-                            element[34], element[35], element[36], element[37],
-                            element[38], element[39], element[40], element[41],
-                            element[42]),
-                        poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
-                        fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
-
-                    });
-                } else {
-                    contadorCooperativasYPre++;
-                }
+                var idDeMongo = datosEmpresas[0]._id;
+                objeto['idEmpresa'] = idDeMongo;
+                emptyList.push({
+                    empresa: objeto['idEmpresa'],
+                    yearDeConstitucion: objeto['yearDeConstitucion'],
+                    nit: objeto['nit'],
+                    telefono: objeto['telefono'],
+                    correoElectronico: objeto['correoElectronico'],
+                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
+                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
+                    TerritorioDeActividad: procesarValorTexto(element[58]),
+                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
+                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
+                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
+                    PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
+                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
+                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
+                    territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
+                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
+                        element[30], element[31], element[32], element[33],
+                        element[34], element[35], element[36], element[37],
+                        element[38], element[39], element[40], element[41],
+                        element[42]),
+                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
+                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
+                });
             }
         }
     }
     //console.log('emptyList ', emptyList);
-    //console.log('contadorNoEncontrados ', contadorNoEncontrados);
-    //console.log('listaDeNitsNoEncontrados ', listaDeNitsNoEncontrados);
-    await insertNitsNofFoundedInDatabase(listaDeNitsNoEncontrados);
+    console.log('contadorEncontrados ', contadorEncontrados);
+    console.log('contadorFiltrados ', contadorFiltrados);
+    console.log('contadorNoEncontrados ', contadorNoEncontrados);    
+    console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
+    
+    fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), (error) => {
+        if(error){
+            console.log('Error', error);
+            return;
+        }
+        console.log('Archivo grabado');
+    });
+    //await insertNitsNofFoundedInDatabase(listaDeNitsNoEncontrados);
     return emptyList;
     //return listaDeNitsNoEncontrados;
 };
+
+const procesarValorNS = (valorDeExcel: any) => {
+    if (valorDeExcel == 'N') return false;
+    if (valorDeExcel == 'S') return true;
+    if (valorDeExcel == undefined) return false;
+}
+
+const procesarValorTexto = (valorDeExcel: any) => {
+    if (valorDeExcel == undefined) {
+        return '';
+    } else {
+        return valorDeExcel;
+    }
+}
+
+const procesarValorEntero = (valorDeExcel: any) => {
+    if (valorDeExcel == undefined) {
+        return 0;
+    } else {
+        return parseInt(valorDeExcel);
+    }
+}
+
+const procesarValorConDecimales = (valorDeExcel: any) => {
+    if (valorDeExcel == undefined) {
+        return 0.0;
+    } else {
+        return parseFloat(valorDeExcel);
+    }
+}
 
 const connect = async (connectionString: string) => {
     try {
@@ -332,9 +392,9 @@ connect('mongodb://localhost/Ongs');
 
 workSheetsFromFile("C://Users//PC//Documents//2019_12_19_Caracterización detallada (2).xlsx")
     .then(response => {
-        insertDataInDatabase(response);
+        //insertDataInDatabase(response);
         //insertNitsNofFoundedInDatabase(response)
-        console.log('datos guardados en Caracterizacion ');
+        //console.log('datos guardados en Caracterizacion ');
     })
     .catch(error => {
         console.error(': ', error);

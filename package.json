@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",    
-    "start:dev": "nodemon ./src/index-manizales.ts"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon ./src/busqueda.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "fs": "^0.0.1-security",
     "mongoose": "^5.12.13",
     "node-xlsx": "^0.16.1",
     "read-excel-file": "^5.1.0"

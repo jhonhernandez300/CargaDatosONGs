@@ -9,127 +9,134 @@ const workSheetsFromFile = async (path: string) => {
     const workSheet = xlsx.parse(path);
     var emptyList: any = [];
     var listaDeNitsNoEncontrados: any = [];
+    var datosDeLosNoEncontrados: any = [];
     var counter: number = 1;
     var contadorNoEncontrados: number = 0;
     var contadorEncontrados: number = 0;
     var contadorCooperativasYPre: number = 0;
+    var contadorFiltrados: number = 0;
     var indice: number = -1;
     var counterObjeto: number = -1;
     var datosEmpresas: any = [];
 
     for (let element of workSheet[6].data) {
-        counter++;
-        counterObjeto++;
-        indice++;
+        counter++;                
         //console.log('counter ', counter); 
-        if (counter >= 3 && counter <= 96) {
+        if (counter >= 3 && counter <= 95) {
             //if (counter >= 4) { 
-            //if (counter == 3) {
-            var objeto: any = { yearDeConstitucion: element[20], nit: element[15], telefono: element[27], correo: element[31], razonSocial: element[7] };
-            //console.log('objeto ', objeto);   
+        //if (counter == 95) {
+            var objeto: any = { nit: element[15]== undefined ? '' : element[15], 
+                                telefonoComercial1: element[27]== undefined ? '' : element[27], 
+                                emailComercial: element[31]== undefined ? '' : element[31], 
+                                razonSocial: element[7]== undefined ? '' : element[7],
+                                claGenEsadl: element[51]== undefined ? '' : element[51]  
+                            };
+            //console.log('objeto ', objeto); 
+            if (objeto.claGenEsadl.indexOf('FONDOS') != -1
+                || objeto.claGenEsadl.indexOf('COOPERATIVAS') != -1
+                || objeto.razonSocial.indexOf('LIQUIDACION') != -1
+                || objeto.razonSocial.indexOf('PRECOOPERATIVAS') != -1) {
+                    contadorFiltrados++;
+                    continue;
+            }  
             const datosEmpresas = await searchInEmpresa(objeto.nit, objeto.telefono, objeto.correo);
             //console.log('datosEmpresas ', datosEmpresas);
             if (datosEmpresas == '') {
-                //console.log('objeto[nit] ', objeto['nit']);
-                if (objeto['nit'] !== undefined) listaDeNitsNoEncontrados.push({ nit: objeto['nit'] });
+                //console.log('objeto[nit] ', objeto['nit']);                
+                datosDeLosNoEncontrados.push({ nit: objeto['nit'], 
+                                            emailComercial: objeto['emailComercial'], 
+                                            telefonoComercial1: objeto['telefonoComercial1'], 
+                                            razonSocial: objeto['razonSocial'], 
+                                            claGenEsadl: objeto['claGenEsadl'] 
+                                        });
                 contadorNoEncontrados++;
             } else {
                 contadorEncontrados++;
             }
 
-            if (datosEmpresas.length > 0) {
-                //console.log('dataFromCaracterizacion ', dataFromCaracterizacion);
-                //console.log('element[0] ', element[0])
-                if (estaEnLiquidacionOEsPre(objeto.razonSocial) == false) {
-                    var columnasDeExcelConDatos: any = generarObjetoConColumnasDeExcel("C://Users//PC//Documents//BD Camaras de comercio.xlsx", indice);
-                    //console.log('columnasDeExcelConDatos ', columnasDeExcelConDatos);
-                    var idDeMongo = datosEmpresas[0]._id;
-                    objeto['idEmpresa'] = idDeMongo;
-                    emptyList.push({
-                        empresa: objeto['idEmpresa'],
-                        yearDeConstitucion: objeto['yearDeConstitucion'],
-                        nit: objeto['nit'],
-                        telefonoComercial1: objeto['telefono'],
-                        emailComercial: objeto['correo'],
-                        BaseDeDatosOrigen: columnasDeExcelConDatos.a,
-                        matricula: columnasDeExcelConDatos.b,
-                        organizacion: columnasDeExcelConDatos.d,
-                        categoria: columnasDeExcelConDatos.e,
-                        estMatricula: columnasDeExcelConDatos.f,
-                        estDatos: columnasDeExcelConDatos.g,
-                        razonSocial: columnasDeExcelConDatos.h,
-                        fechaDeMatricula: columnasDeExcelConDatos.q,
-                        fechaDeRenovacion: columnasDeExcelConDatos.r,
-                        ultimoYearDeRenovacion: columnasDeExcelConDatos.s,
-                        fechaConstitucion: columnasDeExcelConDatos.u,
-                        fechaDeVigencia: columnasDeExcelConDatos.x,
-                        direccionComercial: columnasDeExcelConDatos.y,
-                        municipioComercial: columnasDeExcelConDatos.aa,
-                        telefonoComercial2: columnasDeExcelConDatos.ac,
-                        vigilancia: procesarValorTexto(columnasDeExcelConDatos.ae),
-                        direccionDeNotificacion: columnasDeExcelConDatos.ai,
-                        municipioDeNotificacion: columnasDeExcelConDatos.aj,
-                        telefonoDeNotificacion1: columnasDeExcelConDatos.ak,
-                        telefonoDeNotificacion2: columnasDeExcelConDatos.al,
-                        emailNotificacion: columnasDeExcelConDatos.am,
-                        ciiu1: columnasDeExcelConDatos.an,
-                        ctrEmbargo: procesarValorNS(columnasDeExcelConDatos.at),
-                        ubicacion: columnasDeExcelConDatos.ax,
-                        claGenEsadl: columnasDeExcelConDatos.ay,
-                        claEspeEsadl: columnasDeExcelConDatos.az,
-                        benLey1780Mat: procesarValorNS(columnasDeExcelConDatos.bc),
-                        cumLey1780Ren: procesarValorNS(columnasDeExcelConDatos.bd),
-                        manLey1780Ren: procesarValorNS(columnasDeExcelConDatos.be),
-                        tamañoDeLaEmpresa: procesarValorTexto(columnasDeExcelConDatos.bi),
-                        personal: columnasDeExcelConDatos.bj,
-                        activoCorriente: columnasDeExcelConDatos.bk,
-                        activoTotal: columnasDeExcelConDatos.bp,
-                        pasivoCorriente: columnasDeExcelConDatos.bq,
-                        pasivoTotal: columnasDeExcelConDatos.bs,
-                        patrimonio: columnasDeExcelConDatos.bt,
-                        pasivoMasPatrimonio: columnasDeExcelConDatos.bu,
-                        ingresosOperacionales: columnasDeExcelConDatos.bv,
-                        ingresosNoOperacionales: columnasDeExcelConDatos.bw,
-                        gastosOperacionales: columnasDeExcelConDatos.bx,
-                        gastosNoOperacionales: columnasDeExcelConDatos.by,
-                        costosDeVentas: columnasDeExcelConDatos.bz,
-                        gastosDeImpuestos: columnasDeExcelConDatos.ca,
-                        utilidadesOperacional: columnasDeExcelConDatos.cb,
-                        utilidadesNetas: columnasDeExcelConDatos.cc,
-                        grupoNiif: procesarValorTexto(columnasDeExcelConDatos.cd),
-                        yearDatos: columnasDeExcelConDatos.ce,
-                        fechaDatos: columnasDeExcelConDatos.cf,
-                        patrimEsadl: columnasDeExcelConDatos.cr,
-                        fechaDePagoDeRenta2015: columnasDeExcelConDatos.dt,
-                        fechaDePagoDeRenta2016: columnasDeExcelConDatos.du,
-                        fechaDePagoDeRenta2017: columnasDeExcelConDatos.dv,
-                        fechaDePagoDeRenta2018: columnasDeExcelConDatos.dw,
-                        fechaDePagoDeRenta2019: columnasDeExcelConDatos.dx,
-                        acti2015: columnasDeExcelConDatos.dy,
-                        acti2016: columnasDeExcelConDatos.dz,
-                        acti2017: columnasDeExcelConDatos.ea,
-                        acti2018: columnasDeExcelConDatos.eb,
-                        acti2019: columnasDeExcelConDatos.ec,
-                        tieneLibros: procesarValorNS(columnasDeExcelConDatos.ee),
-                        repLegal: columnasDeExcelConDatos.eg,
-                        nombreDelRepresentanteLegal: columnasDeExcelConDatos.eh,
-                        autEnv: procesarValorNS(columnasDeExcelConDatos.es)
-                    });
-                } else {
-                    contadorCooperativasYPre++;
-                }
-
+            if (datosEmpresas.length > 0) {                
+                //console.log('columnasDeExcelConDatos ', columnasDeExcelConDatos);
+                var idDeMongo = datosEmpresas[0]._id;
+                objeto['idEmpresa'] = idDeMongo;
+                emptyList.push({
+                    empresa: objeto['idEmpresa'],                    
+                    nit: objeto['nit'],
+                    telefonoComercial1: objeto['telefonoComercial1'],
+                    emailComercial: objeto['emailComercial'],
+                    BaseDeDatosOrigen: element[0], //a,
+                    matricula: element[1], //b
+                    organizacion: element[3], //d,
+                    categoria: element[4], //e,
+                    estMatricula: element[5], //f,
+                    estDatos: element[6], //g,
+                    razonSocial: element[7], //h,
+                    fechaDeMatricula: element[16], //q,
+                    fechaDeRenovacion: element[17], //r,
+                    ultimoYearDeRenovacion: element[18], //s,
+                    fechaConstitucion: element[20], //u,
+                    fechaDeVigencia: element[23], //x,
+                    direccionComercial: element[24], //y,
+                    municipioComercial: element[26], //aa,
+                    telefonoComercial2: procesarValorEntero(element[28]), //ac,
+                    vigilancia: procesarValorTexto(element[30]), //ae),
+                    direccionDeNotificacion: element[34], //ai,
+                    municipioDeNotificacion: element[35], //aj,
+                    telefonoDeNotificacion1: procesarValorEntero(element[36]), //ak,
+                    telefonoDeNotificacion2: procesarValorEntero(element[37]), //al,
+                    emailNotificacion: element[38], //am,
+                    ciiu1: element[39], //an,
+                    ctrEmbargo: procesarValorNS(element[45]), //at),
+                    ubicacion: element[49], //ax,
+                    claGenEsadl: element[50], //ay,
+                    claEspeEsadl: element[51], //az,
+                    benLey1780Mat: procesarValorNS(element[54]), //bc),
+                    cumLey1780Ren: procesarValorNS(element[55]), //bd),
+                    manLey1780Ren: procesarValorNS(element[56]), //be),
+                    tamañoDeLaEmpresa: procesarValorTexto(element[60]), //bi),
+                    personal: element[61], //bj,
+                    activoCorriente: procesarValorConDecimales(element[62]), //bk,
+                    activoTotal: procesarValorConDecimales(element[67]), //bp,
+                    pasivoCorriente: procesarValorConDecimales(element[68]), //bq,
+                    pasivoTotal: procesarValorConDecimales(element[70]), //bs,
+                    patrimonio: procesarValorConDecimales(element[71]), //bt,
+                    pasivoMasPatrimonio: procesarValorConDecimales(element[72]), //bu,
+                    ingresosOperacionales: procesarValorConDecimales(element[73]), //bv,
+                    ingresosNoOperacionales: procesarValorConDecimales(element[74]), //bw,
+                    gastosOperacionales: procesarValorConDecimales(element[75]), //bx,
+                    gastosNoOperacionales: procesarValorConDecimales(element[76]), //by,
+                    costosDeVentas: procesarValorConDecimales(element[77]), //bz,
+                    gastosDeImpuestos: procesarValorConDecimales(element[79]), //ca,
+                    utilidadesOperacional: procesarValorConDecimales(element[80]), //cb,
+                    utilidadesNetas: procesarValorConDecimales(element[81]), //cc,
+                    grupoNiif: procesarValorTexto(element[82]), //cd),
+                    yearDatos: element[83], //ce,
+                    fechaDatos: element[84], //cf,
+                    patrimEsadl: element[95], //cr,
+                    fechaDePagoDeRenta2015: element[123], //dt,
+                    fechaDePagoDeRenta2016: element[124], //du,
+                    fechaDePagoDeRenta2017: element[125], //dv,
+                    fechaDePagoDeRenta2018: element[126], //dw,
+                    fechaDePagoDeRenta2019: element[127], //dx,
+                    acti2015: element[128], //dy,
+                    acti2016: element[129], //dz,
+                    acti2017: element[130], //ea,
+                    acti2018: element[131], //eb,
+                    acti2019: element[132], //ec,
+                    tieneLibros: procesarValorNS(element[134]), //ee),
+                    repLegal: procesarValorEntero(element[136]), //eg,
+                    nombreDelRepresentanteLegal: element[137], //eh,
+                    autEnv: procesarValorNS(element[148]), //es)
+                });
             }
         }
     }
-    //console.log('emptyList ', emptyList);
-    console.log('contadorNoEncontrados ', contadorNoEncontrados);
-    console.log('contadorCooperativasYPre ', contadorCooperativasYPre);
+    //console.log('emptyList ', emptyList);       
     console.log('contadorEncontrados ', contadorEncontrados);
-    await insertNitsNotFoundedInDatabase(listaDeNitsNoEncontrados);
-    console.log('datos guardados en NitNoEncontrados ');
-    return emptyList;
-    //return listaDeNitsNoEncontrados;
+    // console.log('contadorNoEncontrados ', contadorNoEncontrados); 
+    // console.log('contadorFiltrados ', contadorFiltrados);
+    // console.log('datos de los no encontrados ', datosDeLosNoEncontrados);
+     
+    return emptyList;    
 };
 
 const connect = async (connectionString: string) => {
@@ -185,15 +192,13 @@ const searchInCaracterizacion = async (nit: string, telefono: string, correoElec
     return data;
 }
 
-
-
-const procesarValorNS = (valorDeExcel: string) => {
+const procesarValorNS = (valorDeExcel: any) => {
     if (valorDeExcel == 'N') return false;
     if (valorDeExcel == 'S') return true;
     if (valorDeExcel == undefined) return false;
 }
 
-const procesarValorTexto = (valorDeExcel: string) => {
+const procesarValorTexto = (valorDeExcel: any) => {
     if (valorDeExcel == undefined) {
         return '';
     } else {
@@ -201,98 +206,19 @@ const procesarValorTexto = (valorDeExcel: string) => {
     }
 }
 
-const generarObjetoConColumnasDeExcel = (path: string, indice: number) => {
-    const workSheet = xlsx.parse(path);
-    let element = workSheet[6].data;
-    //console.log('element ', element[indice][0]);
-    var objeto: any = {
-        a: element[indice][0],
-        b: element[indice][1],
-        d: element[indice][3],
-        e: element[indice][4],
-        f: element[indice][5],
-        g: element[indice][6],
-        h: element[indice][7],
-        q: element[indice][16],
-        r: element[indice][17],
-        s: element[indice][18],
-        u: element[indice][20],
-        x: element[indice][23],
-        y: element[indice][24],
-        aa: element[indice][26],
-        ac: element[indice][28],
-        ae: element[indice][30],
-        ai: element[indice][34],
-        aj: element[indice][35],
-        ak: element[indice][36],
-        al: element[indice][37],
-        am: element[indice][38],
-        an: element[indice][39],
-        at: element[indice][45],
-        ax: element[indice][49],
-        ay: element[indice][50],
-        az: element[indice][51],
-        bc: element[indice][54],
-        bd: element[indice][55],
-        be: element[indice][56],
-        bi: element[indice][60],
-        bj: element[indice][61],
-        bk: element[indice][62],
-        bp: element[indice][67],
-        bq: element[indice][68],
-        bs: element[indice][70],
-        bt: element[indice][71],
-        bu: element[indice][72],
-        bv: element[indice][73],
-        bw: element[indice][74],
-        bx: element[indice][75],
-        by: element[indice][76],
-        bz: element[indice][77],
-        ca: element[indice][79],
-        cb: element[indice][79],
-        cc: element[indice][80],
-        cd: element[indice][81],
-        ce: element[indice][82],
-        cf: element[indice][83],
-        cr: element[indice][95],
-        dt: element[indice][123],
-        du: element[indice][124],
-        dv: element[indice][125],
-        dw: element[indice][126],
-        dx: element[indice][127],
-        dy: element[indice][128],
-        dz: element[indice][129],
-        ea: element[indice][130],
-        eb: element[indice][131],
-        ec: element[indice][132],
-        ee: element[indice][134],
-        eg: element[indice][136],
-        eh: element[indice][137],
-        em: element[indice][142],
-        en: element[indice][142],
-        es: element[indice][148]
-    };
-    //console.log('objeto ', objeto);
-    return objeto;
-}
-
-const estaEnLiquidacionOEsPre = (data: string) => {
-    var liquidacion = /LIQUIDACION/gi;
-
-    if (data.search(liquidacion) != -1) {//No lo encontró == -1 negado, es lo encontró, osea != -1
-        return true;
+const procesarValorEntero = (valorDeExcel: any) => {
+    if (valorDeExcel == undefined) {
+        return 0;
     } else {
-        return revisarSiEsPre(data);
+        return parseInt(valorDeExcel);
     }
 }
 
-const revisarSiEsPre = (data: string) => {
-    var pre = /PRE-COOPERATIVAS/gi;
-    //console.log(data.search(pre));
-    if (data.search(pre) != -1) {
-        return true;
+const procesarValorConDecimales = (valorDeExcel: any) => {
+    if (valorDeExcel == undefined) {
+        return 0.0;
     } else {
-        return false;
+        return parseFloat(valorDeExcel);
     }
 }
 
