@@ -32,7 +32,7 @@ const workSheetsFromFile = async (path: string) => {
                 nit: element[2] == undefined ? '' : element[2],
                 telefono: element[11] == undefined ? '' : element[11],
                 correoElectronico: element[12] == undefined ? '' : element[12],
-                razonSocial: element[1] == undefined ? '' : element[1],
+                razonSocial: element[1] == undefined ? '' : quitarTildes(element[1]),
                 numero: element[0] == undefined ? 0 : element[0]
             };
             //console.log('objeto ', objeto);   
@@ -47,12 +47,14 @@ const workSheetsFromFile = async (path: string) => {
             //var objeto: any = { yearDeConstitucion: '10', nit: '10', telefono: '0', correo: '0' };
             //const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correo);
             //console.log('datosEmpresas ', datosEmpresas);
+            //console.log(quitarTildes('CASÁ'));
+
             if (datosEmpresas == '') {
                 datosDeLosNoEncontrados.push({
                     nit: objeto['nit'],
                     correoElectronico: objeto['correoElectronico'],
-                    telefono: objeto['telefono'],
-                    razonSocial: objeto['razonSocial'],
+                    telefono: objeto['telefono'],                    
+                    razonSocial: quitarTildes(objeto['razonSocial']),
                     claGenEsadl: objeto['claGenEsadl'],
                     numero: objeto['numero']
                 });
@@ -64,41 +66,41 @@ const workSheetsFromFile = async (path: string) => {
             //console.log('datosEmpresas.length ', datosEmpresas.length); 
             //console.log('element.length ', element.length); 
 
-            if (datosEmpresas.length > 0) {
-                var idDeMongo = datosEmpresas[0]._id;
-                objeto['idEmpresa'] = idDeMongo;
-                emptyList.push({
-                    empresa: objeto['idEmpresa'],
-                    yearDeConstitucion: objeto['yearDeConstitucion'],
-                    nit: objeto['nit'],
-                    telefono: objeto['telefono'],
-                    correoElectronico: objeto['correoElectronico'],
-                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
-                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
-                    TerritorioDeActividad: procesarValorTexto(element[58]),
-                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
-                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
-                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
-                    PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
-                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
-                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
-                    territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
-                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
-                        element[30], element[31], element[32], element[33],
-                        element[34], element[35], element[36], element[37],
-                        element[38], element[39], element[40], element[41],
-                        element[42]),
-                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
-                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
-                });
-            }
+            // if (datosEmpresas.length > 0) {
+            //     var idDeMongo = datosEmpresas[0]._id;
+            //     objeto['idEmpresa'] = idDeMongo;
+            //     emptyList.push({
+            //         empresa: objeto['idEmpresa'],
+            //         yearDeConstitucion: objeto['yearDeConstitucion'],
+            //         nit: objeto['nit'],
+            //         telefono: objeto['telefono'],
+            //         correoElectronico: objeto['correoElectronico'],
+            //         InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
+            //         totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
+            //         TerritorioDeActividad: procesarValorTexto(element[58]),
+            //         NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
+            //         NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
+            //         NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
+            //         PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
+            //         laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
+            //         queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
+            //         territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
+            //         queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
+            //             element[30], element[31], element[32], element[33],
+            //             element[34], element[35], element[36], element[37],
+            //             element[38], element[39], element[40], element[41],
+            //             element[42]),
+            //         poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
+            //         fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
+            //     });
+            // }
         }
     }
     //console.log('emptyList ', emptyList);
-    console.log('contadorEncontrados ', contadorEncontrados);
-    console.log('contadorFiltrados ', contadorFiltrados);
-    console.log('contadorNoEncontrados ', contadorNoEncontrados);    
-    console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
+    // console.log('contadorEncontrados ', contadorEncontrados);
+    // console.log('contadorFiltrados ', contadorFiltrados);
+    // console.log('contadorNoEncontrados ', contadorNoEncontrados);    
+    // console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
     
     fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), (error) => {
         if(error){
@@ -111,6 +113,27 @@ const workSheetsFromFile = async (path: string) => {
     return emptyList;
     //return listaDeNitsNoEncontrados;
 };
+
+const quitarTildes = (dato: any) => {
+    if(dato.indexOf('Á') != -1){
+        dato = dato.replace('Á', 'A');
+    }
+
+    if(dato.indexOf('É') != -1){
+        dato = dato.replace('É', 'E');
+    }
+
+    if(dato.indexOf('Í') != -1){
+        dato = dato.replace('Í', 'I');
+    }
+    if(dato.indexOf('Ó') != -1){
+        dato = dato.replace('Ó', 'O');
+    }
+    if(dato.indexOf('Ú') != -1){
+        dato = dato.replace('Ú', 'U');
+    }
+    return dato;
+}
 
 const procesarValorNS = (valorDeExcel: any) => {
     if (valorDeExcel == 'N') return false;
