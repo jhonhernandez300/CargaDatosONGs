@@ -33,7 +33,24 @@ const workSheetsFromFile = async (path: string) => {
                 telefono: element[11] == undefined ? '' : element[11],
                 correoElectronico: element[12] == undefined ? '' : element[12],
                 razonSocial: element[1] == undefined ? '' : quitarTildes(element[1]),
-                numero: element[0] == undefined ? 0 : element[0]
+                numero: element[0] == undefined ? 0 : element[0],
+                institucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
+                totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
+                territorioDeActividad: procesarValorTexto(element[58]),
+                numeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
+                numeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
+                numeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
+                porcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
+                laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
+                queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
+                territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
+                queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
+                        element[30], element[31], element[32], element[33],
+                        element[34], element[35], element[36], element[37],
+                        element[38], element[39], element[40], element[41],
+                        element[42]),
+                poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
+                fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
             };
             //console.log('objeto ', objeto);   
             if (objeto.razonSocial.indexOf('FONDOS') != -1
@@ -56,7 +73,20 @@ const workSheetsFromFile = async (path: string) => {
                     telefono: objeto['telefono'],                    
                     razonSocial: quitarTildes(objeto['razonSocial']),
                     claGenEsadl: objeto['claGenEsadl'],
-                    numero: objeto['numero']
+                    numero: objeto['numero'],
+                    institucionQueExpidePersoneriaJuridica: objeto['institucionQueExpidePersoneriaJuridica'],
+                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: objeto['totalDeIngresosDeLaOrganizacionEnElUltimoYear2018'],
+                    territorioDeActividad: objeto['territorioDeActividad'],
+                    numeroTotalDeEmpleadosConContratoLaboral: objeto['numeroTotalDeEmpleadosConContratoLaboral'],
+                    numeroTotalDeVoluntariosEnLaOrganizacion: objeto['numeroTotalDeVoluntariosEnLaOrganizacion'],
+                    numeroTotalDePracticantesEnLaOrganizacion: objeto['numeroTotalDePracticantesEnLaOrganizacion'],
+                    porcentajeDeFinanciacionPorRecursosPropios: objeto['porcentajeDeFinanciacionPorRecursosPropios'],
+                    laOrganizacionTieneRedesOMedios: objeto['laOrganizacionTieneRedesOMedios'], 
+                    queRedesOMediosManejaLaOrganizacion: objeto['queRedesOMediosManejaLaOrganizacion'], 
+                    territorioDeCobertura: objeto['territorioDeCobertura'], 
+                    queOdsDesarrollaLaOrganizacion: objeto['queOdsDesarrollaLaOrganizacion'], 
+                    poblacionObjetivoDeLaOrganizacion: objeto['poblacionObjetivoDeLaOrganizacion'], 
+                    fuentesDeFinanciacionDeLaOrganizacion: objeto['fuentesDeFinanciacionDeLaOrganizacion'], 
                 });
                 contadorNoEncontrados++;
             } else {
@@ -66,49 +96,49 @@ const workSheetsFromFile = async (path: string) => {
             //console.log('datosEmpresas.length ', datosEmpresas.length); 
             //console.log('element.length ', element.length); 
 
-            // if (datosEmpresas.length > 0) {
-            //     var idDeMongo = datosEmpresas[0]._id;
-            //     objeto['idEmpresa'] = idDeMongo;
-            //     emptyList.push({
-            //         empresa: objeto['idEmpresa'],
-            //         yearDeConstitucion: objeto['yearDeConstitucion'],
-            //         nit: objeto['nit'],
-            //         telefono: objeto['telefono'],
-            //         correoElectronico: objeto['correoElectronico'],
-            //         InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
-            //         totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
-            //         TerritorioDeActividad: procesarValorTexto(element[58]),
-            //         NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
-            //         NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
-            //         NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
-            //         PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
-            //         laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
-            //         queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
-            //         territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
-            //         queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
-            //             element[30], element[31], element[32], element[33],
-            //             element[34], element[35], element[36], element[37],
-            //             element[38], element[39], element[40], element[41],
-            //             element[42]),
-            //         poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
-            //         fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
-            //     });
-            // }
+            if (datosEmpresas.length > 0) {
+                var idDeMongo = datosEmpresas[0]._id;
+                objeto['idEmpresa'] = idDeMongo;
+                emptyList.push({
+                    empresa: objeto['idEmpresa'],
+                    yearDeConstitucion: objeto['yearDeConstitucion'],
+                    nit: objeto['nit'],
+                    telefono: objeto['telefono'],
+                    correoElectronico: objeto['correoElectronico'],
+                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
+                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
+                    TerritorioDeActividad: procesarValorTexto(element[58]),
+                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
+                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
+                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
+                    PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
+                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
+                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
+                    territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
+                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
+                        element[30], element[31], element[32], element[33],
+                        element[34], element[35], element[36], element[37],
+                        element[38], element[39], element[40], element[41],
+                        element[42]),
+                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
+                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
+                });
+            }
         }
     }
     //console.log('emptyList ', emptyList);
-    // console.log('contadorEncontrados ', contadorEncontrados);
-    // console.log('contadorFiltrados ', contadorFiltrados);
-    // console.log('contadorNoEncontrados ', contadorNoEncontrados);    
+    //console.log('contadorEncontrados ', contadorEncontrados);
+    //console.log('contadorFiltrados ', contadorFiltrados);
+    //console.log('contadorNoEncontrados ', contadorNoEncontrados);    
     // console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
     
-    fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), (error) => {
-        if(error){
-            console.log('Error', error);
-            return;
-        }
-        console.log('Archivo grabado');
-    });
+    // fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), 'utf8', (error) => {
+    //     if(error){
+    //         console.log('Error', error);
+    //         return;
+    //     }
+    //     console.log('Archivo grabado');
+    // });
     //await insertNitsNofFoundedInDatabase(listaDeNitsNoEncontrados);
     return emptyList;
     //return listaDeNitsNoEncontrados;
@@ -415,9 +445,9 @@ connect('mongodb://localhost/Ongs');
 
 workSheetsFromFile("C://Users//PC//Documents//2019_12_19_Caracterización detallada (2).xlsx")
     .then(response => {
-        //insertDataInDatabase(response);
-        //insertNitsNofFoundedInDatabase(response)
-        //console.log('datos guardados en Caracterizacion ');
+        insertDataInDatabase(response);
+        console.log('***************           Datos guardados       *************************** ');
+        //insertNitsNofFoundedInDatabase(response)        
     })
     .catch(error => {
         console.error(': ', error);
