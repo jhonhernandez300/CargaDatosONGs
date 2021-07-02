@@ -65,7 +65,8 @@ let listadoTodasJuntas: string[] = [
     'FEMINARIAS',
     'VEEDURIA CIUDADANA AMBIENTAL',
     'FUNDACION CRAZULAS',
-    'ASOCIACION GOTA DE LECHE'
+    'ASOCIACION GOTA DE LECHE',   
+
 ];
 
 var idEmpresa: any;

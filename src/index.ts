@@ -31,6 +31,7 @@ const workSheetsFromFile = async (path: string) => {
         //if (counter == 62) {
             var objeto: any = {
                 yearDeConstitucion: element[4] == undefined ? '' : element[4],
+                nit: element[3],
                 razonSocial: element[2],                
                 direccion: element[11],
                 telefono: element[12] == undefined ? '' : element[12],
@@ -58,6 +59,7 @@ const workSheetsFromFile = async (path: string) => {
             if (datosEmpresas == '') {
                 datosDeLosNoEncontrados.push({          
                     razonSocial: objeto['razonSocial'],
+                    nit: objeto['nit'],
                     estaEliminado: false,
                     idCohorte: Types.ObjectId('5fe205a6d068363fda940a0b'),
                     correoElectronico: objeto['correoElectronico'],
@@ -143,10 +145,10 @@ const workSheetsFromFile = async (path: string) => {
         }
     }
     //console.log('emptyList ', emptyList);
-    console.log('contadorEncontrados ', contadorEncontrados);
-    console.log('contadorFiltrados ', contadorFiltrados);
-    console.log('contadorNoEncontrados ', contadorNoEncontrados);    
-    console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
+    // console.log('contadorEncontrados ', contadorEncontrados);
+    // console.log('contadorFiltrados ', contadorFiltrados);
+    // console.log('contadorNoEncontrados ', contadorNoEncontrados);    
+    // console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
     
     // fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), 'utf8', (error) => {
     //     if(error){
@@ -458,8 +460,8 @@ const insertDataInDatabase = async (data: any[]) => {
 
 workSheetsFromFile("C://Users//PC//Documents//2019_12_19_Caracterización detallada (2).xlsx")
     .then(response => {
-        // insertDataInDatabase(response);
-        // console.log('***************           Datos guardados       *************************** ');
+        insertDataInDatabase(response);
+        console.log('***************           Datos guardados       *************************** ');
         //insertNitsNofFoundedInDatabase(response)        
     })
     .catch(error => {
