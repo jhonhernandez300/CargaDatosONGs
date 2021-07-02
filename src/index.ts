@@ -6,6 +6,7 @@ import { EmpresaSchema } from './empresaSchema';
 import { NitSchema } from './nit-schema';
 import { CaracterizacionSchema } from './caracterizacion-schema';
 import  fs from 'fs';
+import { Types } from 'mongoose';
 
 
 const workSheetsFromFile = async (path: string) => {
@@ -26,31 +27,15 @@ const workSheetsFromFile = async (path: string) => {
         counterObjeto++;
         //console.log('counter ', counter); 
         if (counter >= 22 && counter <= 154) {
-        //if (counter == 24) {
+        //if (counter == 22) {
+        //if (counter == 62) {
             var objeto: any = {
-                yearDeConstitucion: element[3] == undefined ? '' : element[3],
-                nit: element[2] == undefined ? '' : element[2],
-                telefono: element[11] == undefined ? '' : element[11],
-                correoElectronico: element[12] == undefined ? '' : element[12],
-                razonSocial: element[1] == undefined ? '' : quitarTildes(element[1]),
-                numero: element[0] == undefined ? 0 : element[0],
-                institucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
-                totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
-                territorioDeActividad: procesarValorTexto(element[58]),
-                numeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
-                numeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
-                numeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
-                porcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
-                laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
-                queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
-                territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
-                queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
-                        element[30], element[31], element[32], element[33],
-                        element[34], element[35], element[36], element[37],
-                        element[38], element[39], element[40], element[41],
-                        element[42]),
-                poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
-                fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
+                yearDeConstitucion: element[4] == undefined ? '' : element[4],
+                razonSocial: element[2],                
+                direccion: element[11],
+                telefono: element[12] == undefined ? '' : element[12],
+                correoElectronico: element[13] == undefined ? '' : element[13],                                
+                institucionQueExpidePersoneriaJuridica: procesarValorTexto(element[8])
             };
             //console.log('objeto ', objeto);   
             if (objeto.razonSocial.indexOf('FONDOS') != -1
@@ -60,33 +45,52 @@ const workSheetsFromFile = async (path: string) => {
                 contadorFiltrados++;
                 continue;
             }
-            const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correoElectronico);
+            const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correoElectronico, objeto.razonSocial);
             //var objeto: any = { yearDeConstitucion: '10', nit: '10', telefono: '0', correo: '0' };
             //const datosEmpresas = await readCollection(objeto.nit, objeto.telefono, objeto.correo);
             //console.log('datosEmpresas ', datosEmpresas);
             //console.log(quitarTildes('CASÁ'));
+            /*function toTitleCase(str) {
+            return str.replace(/\S+/g, str => str.charAt(0).toUpperCase() + str.substr(1).toLowerCase());
+            }
+            */
 
             if (datosEmpresas == '') {
-                datosDeLosNoEncontrados.push({
-                    nit: objeto['nit'],
+                datosDeLosNoEncontrados.push({          
+                    razonSocial: objeto['razonSocial'],
+                    estaEliminado: false,
+                    idCohorte: Types.ObjectId('5fe205a6d068363fda940a0b'),
                     correoElectronico: objeto['correoElectronico'],
-                    telefono: objeto['telefono'],                    
-                    razonSocial: quitarTildes(objeto['razonSocial']),
-                    claGenEsadl: objeto['claGenEsadl'],
-                    numero: objeto['numero'],
-                    institucionQueExpidePersoneriaJuridica: objeto['institucionQueExpidePersoneriaJuridica'],
-                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: objeto['totalDeIngresosDeLaOrganizacionEnElUltimoYear2018'],
-                    territorioDeActividad: objeto['territorioDeActividad'],
-                    numeroTotalDeEmpleadosConContratoLaboral: objeto['numeroTotalDeEmpleadosConContratoLaboral'],
-                    numeroTotalDeVoluntariosEnLaOrganizacion: objeto['numeroTotalDeVoluntariosEnLaOrganizacion'],
-                    numeroTotalDePracticantesEnLaOrganizacion: objeto['numeroTotalDePracticantesEnLaOrganizacion'],
-                    porcentajeDeFinanciacionPorRecursosPropios: objeto['porcentajeDeFinanciacionPorRecursosPropios'],
-                    laOrganizacionTieneRedesOMedios: objeto['laOrganizacionTieneRedesOMedios'], 
-                    queRedesOMediosManejaLaOrganizacion: objeto['queRedesOMediosManejaLaOrganizacion'], 
-                    territorioDeCobertura: objeto['territorioDeCobertura'], 
-                    queOdsDesarrollaLaOrganizacion: objeto['queOdsDesarrollaLaOrganizacion'], 
-                    poblacionObjetivoDeLaOrganizacion: objeto['poblacionObjetivoDeLaOrganizacion'], 
-                    fuentesDeFinanciacionDeLaOrganizacion: objeto['fuentesDeFinanciacionDeLaOrganizacion'], 
+                    telefono: objeto['telefono'],                                        
+                    yearDeConstitucion: objeto['yearDeConstitucion'],  
+                    representanteLegalOLiderDeLaOrganizacion: element[6],    
+                    direccion: element[11],  
+                    generoDelRepresentanteLegal: element[7],            
+                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[8]),                                      
+                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[14], element[15], element[16]),
+                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[17], element[18], element[19], element[20]),
+                    tipologiaDeLaOrganizacion: element[21],
+                    territorioDeCobertura: revisarOpcionesTerritorio(element[22], element[23], element[24], element[25]),
+                    sector: element[26],
+                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[27], element[28], element[29], element[30],
+                        element[31], element[32], element[33], element[34],
+                        element[35], element[36], element[37], element[38],
+                        element[39], element[40], element[41], element[42],
+                        element[43]),
+                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[44], element[45], element[46], element[47], element[48]),
+                    comunidadesEnQueDesarrollaPrincipalmenteSuTrabajo: element[49],
+                    totalDeIngresosDeLaOrganizacionEnElYear2018: element[50],                    
+                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[51], element[52], element[53], element[54], element[55]),
+                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[56]),
+                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[57]),
+                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[58]),
+                    territorioDeActividad: element[59],
+                    numeroTotalDeEmpleadosConContratoDePrestacionDeServicios: element[60],
+                    porcentajeDeFinanciacionPorRecursosPropios: element[61],
+                    porcentajeDeFinanciacionPorRecursosPublicos: element[62],
+                    porcentajeDeFinanciacionPorRecursosPrivados: element[63],
+                    porcentajeDeFinanciacionPorDonaciones: element[64],
+                    porcentajeDeFinanciacionPorCooperacionInternacional: element[65] == undefined ? '' : element[65]
                 });
                 contadorNoEncontrados++;
             } else {
@@ -99,38 +103,50 @@ const workSheetsFromFile = async (path: string) => {
             if (datosEmpresas.length > 0) {
                 var idDeMongo = datosEmpresas[0]._id;
                 objeto['idEmpresa'] = idDeMongo;
-                emptyList.push({
-                    empresa: objeto['idEmpresa'],
-                    yearDeConstitucion: objeto['yearDeConstitucion'],
-                    nit: objeto['nit'],
-                    telefono: objeto['telefono'],
+                emptyList.push({                                                       
+                    idNegocio: Types.ObjectId(objeto['idEmpresa']),
+                    estaEliminado: false,
+                    idCohorte: Types.ObjectId('5fe205a6d068363fda940a0b'),
                     correoElectronico: objeto['correoElectronico'],
-                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[7]),
-                    totalDeIngresosDeLaOrganizacionEnElUltimoYear2018: element[49],
-                    TerritorioDeActividad: procesarValorTexto(element[58]),
-                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[55]),
-                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[56]),
-                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[57]),
-                    PorcentajeDeFinanciacionPorRecursosPropios: procesarValorConDecimales(element[60]),
-                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[13], element[14], element[15]),
-                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[16], element[17], element[18], element[19]),
-                    territorioDeCobertura: revisarOpcionesTerritorio(element[21], element[22], element[23], element[24]),
-                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[26], element[27], element[28], element[29],
-                        element[30], element[31], element[32], element[33],
-                        element[34], element[35], element[36], element[37],
-                        element[38], element[39], element[40], element[41],
-                        element[42]),
-                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[43], element[44], element[45], element[46], element[47]),
-                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[50], element[51], element[52], element[53], element[54])
+                    telefono: objeto['telefono'],                                        
+                    yearDeConstitucion: objeto['yearDeConstitucion'],  
+                    representanteLegalOLiderDeLaOrganizacion: element[6],    
+                    direccion: element[11],  
+                    generoDelRepresentanteLegal: element[7],            
+                    InstitucionQueExpidePersoneriaJuridica: procesarValorTexto(element[8]),                                      
+                    laOrganizacionTieneRedesOMedios: revisarOpcionesTienRedesOMedios(element[14], element[15], element[16]),
+                    queRedesOMediosManejaLaOrganizacion: revisarOpcionesQueRedes(element[17], element[18], element[19], element[20]),
+                    tipologiaDeLaOrganizacion: element[21],
+                    territorioDeCobertura: revisarOpcionesTerritorio(element[22], element[23], element[24], element[25]),
+                    sector: element[26],
+                    queOdsDesarrollaLaOrganizacion: revisarOpcionesOds(element[27], element[28], element[29], element[30],
+                        element[31], element[32], element[33], element[34],
+                        element[35], element[36], element[37], element[38],
+                        element[39], element[40], element[41], element[42],
+                        element[43]),
+                    poblacionObjetivoDeLaOrganizacion: revisarOpcionesPoblacion(element[44], element[45], element[46], element[47], element[48]),
+                    comunidadesEnQueDesarrollaPrincipalmenteSuTrabajo: element[49],
+                    totalDeIngresosDeLaOrganizacionEnElYear2018: element[50],                    
+                    fuentesDeFinanciacionDeLaOrganizacion: revisarOpcionesFuentes(element[51], element[52], element[53], element[54], element[55]),
+                    NumeroTotalDeEmpleadosConContratoLaboral: procesarValorEntero(element[56]),
+                    NumeroTotalDeVoluntariosEnLaOrganizacion: procesarValorEntero(element[57]),
+                    NumeroTotalDePracticantesEnLaOrganizacion: procesarValorEntero(element[58]),
+                    territorioDeActividad: element[59],
+                    numeroTotalDeEmpleadosConContratoDePrestacionDeServicios: element[60],
+                    porcentajeDeFinanciacionPorRecursosPropios: element[61],
+                    porcentajeDeFinanciacionPorRecursosPublicos: element[62],
+                    porcentajeDeFinanciacionPorRecursosPrivados: element[63],
+                    porcentajeDeFinanciacionPorDonaciones: element[64],
+                    porcentajeDeFinanciacionPorCooperacionInternacional: element[65] == undefined ? '' : element[65]
                 });
             }
         }
     }
     //console.log('emptyList ', emptyList);
-    //console.log('contadorEncontrados ', contadorEncontrados);
-    //console.log('contadorFiltrados ', contadorFiltrados);
-    //console.log('contadorNoEncontrados ', contadorNoEncontrados);    
-    // console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
+    console.log('contadorEncontrados ', contadorEncontrados);
+    console.log('contadorFiltrados ', contadorFiltrados);
+    console.log('contadorNoEncontrados ', contadorNoEncontrados);    
+    console.log('datosDeLosNoEncontrados ', datosDeLosNoEncontrados);
     
     // fs.writeFile('C:\\Users\\PC\\Documents\\empresasNoEncontradas.json', JSON.stringify(datosDeLosNoEncontrados), 'utf8', (error) => {
     //     if(error){
@@ -281,11 +297,7 @@ const revisarOpcionesOds = (datoDeExcel26: any, datoDeExcel27: any, datoDeExcel2
     if (opcionMarcada(datoDeExcel26) == 'Si') {
         vector[posicion] = 'Fin de la pobreza';
         posicion++;
-    }
-    if (opcionMarcada(datoDeExcel26) == 'Si') {
-        vector[posicion] = 'Fin de la pobreza';
-        posicion++;
-    }
+    }   
     if (opcionMarcada(datoDeExcel27) == 'Si') {
         vector[posicion] = 'Hambre cero';
         posicion++;
@@ -359,19 +371,19 @@ const revisarOpcionesTerritorio = (datoDeExcel21: any, datoDeExcel22: any, datoD
     let posicion: number = 0;
 
     if (opcionMarcada(datoDeExcel21) == 'Si') {
-        vector[0] = 'Local';
+        vector[posicion] = 'Local';
         posicion++;
     }
     if (opcionMarcada(datoDeExcel22) == 'Si') {
-        vector[1] = 'Regional';
+        vector[posicion] = 'Regional';
         posicion++;
     }
     if (opcionMarcada(datoDeExcel23) == 'Si') {
-        vector[2] = 'Nacional';
+        vector[posicion] = 'Nacional';
         posicion++;
     }
     if (opcionMarcada(datoDeExcel24) == 'Si') {
-        vector[3] = 'Internacional';
+        vector[posicion] = 'Internacional';
         posicion++;
     }
     return vector;
@@ -406,20 +418,16 @@ const opcionMarcada = (datoDeExcel: any) => {
     return 'No';
 }
 
-const readCollection = async (nit: string, telefono: string, correoElectronico: string) => {
+const readCollection = async (nit: string, telefono: string, correoElectronico: string, razonSocial: string) => {
     const empresaData = mongoose.model('Empresa', EmpresaSchema, 'Empresa');
     var data = await empresaData.find({
-        $or: [{ nit }, { telefono }, { correoElectronico }]
+        $or: [{ nit }, { telefono }, { correoElectronico }, { razonSocial }]
     });
     //console.table(data);
     //console.log('datos de mongo', data);
     return data;
 }
 
-const insertDataInDatabase = async (data: any[]) => {
-    const empresaData = mongoose.model('Caracterizacion', CaracterizacionSchema, 'Caracterizacion');
-    await empresaData.create(data);
-}
 
 const estaEnLiquidacionOEsPre = (data: string) => {
     var liquidacion = /LIQUIDACION/gi;
@@ -443,10 +451,15 @@ const revisarSiEsPre = (data: string) => {
 
 connect('mongodb://localhost/Ongs');
 
+const insertDataInDatabase = async (data: any[]) => {
+    const empresaData = mongoose.model('Caracterizacion', CaracterizacionSchema, 'Caracterizacion');
+    await empresaData.create(data);
+}
+
 workSheetsFromFile("C://Users//PC//Documents//2019_12_19_Caracterización detallada (2).xlsx")
     .then(response => {
-        insertDataInDatabase(response);
-        console.log('***************           Datos guardados       *************************** ');
+        // insertDataInDatabase(response);
+        // console.log('***************           Datos guardados       *************************** ');
         //insertNitsNofFoundedInDatabase(response)        
     })
     .catch(error => {
